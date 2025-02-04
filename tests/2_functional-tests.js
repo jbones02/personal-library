@@ -1,11 +1,3 @@
-/*
-*
-*
-*       FILL IN EACH FUNCTIONAL TEST BELOW COMPLETELY
-*       -----[Keep the tests in the same order!]-----
-*       
-*/
-
 const chaiHttp = require('chai-http');
 const chai = require('chai');
 const assert = chai.assert;
@@ -16,10 +8,6 @@ const SERVER_URL = 'http://localhost:3000'
 
 suite('Functional Tests', function() {
 
-  /*
-  * ----[EXAMPLE TEST]----
-  * Each test should completely test the response of the API end-point including response status code!
-  */
   test('#example Test GET /api/books', function(done){
      chai.request(server)
       .get('/api/books')
@@ -32,12 +20,8 @@ suite('Functional Tests', function() {
         done();
       });
   });
-  /*
-  * ----[END of EXAMPLE TEST]----
-  */
 
   suite('Routing tests', function() {
-
 
     suite('POST /api/books with title => create book object/expect book object', function() {
       
@@ -64,7 +48,6 @@ suite('Functional Tests', function() {
       
     });
 
-
     suite('GET /api/books => array of books', function(){
       
       test('Test GET /api/books',  function(done){
@@ -86,7 +69,6 @@ suite('Functional Tests', function() {
       });      
       
     });
-
 
     suite('GET /api/books/[id] => book object with [id]', function(){
       
@@ -125,7 +107,6 @@ suite('Functional Tests', function() {
       });
       
     });
-
 
     suite('POST /api/books/[id] => add comment/expect book object with id', function(){
       

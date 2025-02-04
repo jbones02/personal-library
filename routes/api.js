@@ -1,11 +1,3 @@
-/*
-*
-*
-*       Complete the API routing below
-*       
-*       
-*/
-
 'use strict';
 
 const { Book } = require('../models');
@@ -21,8 +13,6 @@ module.exports = function (app) {
 
   app.route('/api/books')
     .get(async (req, res) => {
-      //response will be array of book objects
-      //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
       try {
         const books = await BookModel.find({});
 
@@ -41,7 +31,6 @@ module.exports = function (app) {
     
     .post(async (req, res) => {
       let title = req.body.title;
-      //response will contain new book object including atleast _id and title
       if (!title) {
         return res.send('missing required field title');
       }
@@ -61,7 +50,6 @@ module.exports = function (app) {
     
     // Complete delete
     .delete(async (req, res) => {
-      //if successful response will be 'complete delete successful'
       try {
         const result = await BookModel.deleteMany({});
       
@@ -77,12 +65,9 @@ module.exports = function (app) {
       }
     });
 
-
-
   app.route('/api/books/:id')
     .get(async (req, res) => {
       let bookId = req.params.id;
-      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
 
       if (!mongoose.Types.ObjectId.isValid(bookId)) {
         return res.status(200).send('no book exists');
@@ -109,7 +94,6 @@ module.exports = function (app) {
       if (!mongoose.Types.ObjectId.isValid(bookId)) {
         return res.status(200).send('no book exists');
       }
-      //json res format same as .get
       try {
         if (!comment) {
           return res.status(200).send('missing required field comment');
@@ -139,7 +123,6 @@ module.exports = function (app) {
       if (!mongoose.Types.ObjectId.isValid(bookId)) {
         return res.status(200).send('no book exists');
       }
-      //if successful response will be 'delete successful'
       try {
         const book = await Book.findByIdAndDelete(bookId);
         if (!book) {
