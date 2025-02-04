@@ -7,7 +7,11 @@
 */
 
 'use strict';
+
+const { Book } = require('../models');
+
 const BookModel = require('../models').Book;
+const mongoose = require('mongoose');
 
 module.exports = function (app) {
 
@@ -16,16 +20,30 @@ module.exports = function (app) {
   }
 
   app.route('/api/books')
-    .get(function (req, res){
+    .get(async (req, res) => {
       //response will be array of book objects
       //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
+      try {
+        const books = await BookModel.find({});
+
+        const formattedBooks = books.map(book => ({
+          _id: book._id,
+          title: book.title,
+          commentcount: book.comments.length
+        }));
+
+        return res.status(200).json(formattedBooks);
+      } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'server error' });
+      }
     })
     
     .post(async (req, res) => {
       let title = req.body.title;
       //response will contain new book object including atleast _id and title
       if (!title) {
-        return res.send("missing required field title");
+        return res.send('missing required field title');
       }
 
       try {
@@ -33,12 +51,12 @@ module.exports = function (app) {
           title: title,
           comments: []
         });
-        await BookModel.save();
-        res.status(200).json({ _id: book._id, title: book.title });
+        await book.save();
+        return res.status(200).json({ _id: book._id, title: book.title });
       } catch (err) {
-        console.err(err);
-        res.status(500).json({ error: 'server error' });
-      }
+        console.error(err);
+        return res.status(500).json({ error: 'server error' });
+      }  
     })
     
     // Complete delete
@@ -48,10 +66,10 @@ module.exports = function (app) {
         const result = await BookModel.deleteMany({});
       
         if (!result) {
-          return res.status(400).json({ error: "failed to complete delete" });
+          return res.status(400).json({ error: 'failed to complete delete' });
         }
 
-        return res.status(200).send("complete delete successful");
+        return res.status(200).send('complete delete successful');
 
       } catch (err) {
         console.error(err);
@@ -65,11 +83,18 @@ module.exports = function (app) {
     .get(async (req, res) => {
       let bookId = req.params.id;
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+
+      if (!mongoose.Types.ObjectId.isValid(bookId)) {
+        return res.status(200).send('no book exists');
+      }
+
       try {
-        const book = await findBookById({ _id: bookId });
+        const book = await findBookById(bookId);
+        
         if (!book) {
-          return res.status(200).send("no book exists");
+          return res.status(200).send('no book exists');
         }
+
         return res.status(200).json(book);
       } catch (err) {
         console.error(err);
@@ -77,15 +102,53 @@ module.exports = function (app) {
       }
     })
     
-    .post(function(req, res){
-      let bookid = req.params.id;
+    .post(async (req, res) => {
+      let bookId = req.params.id;
       let comment = req.body.comment;
+
+      if (!mongoose.Types.ObjectId.isValid(bookId)) {
+        return res.status(200).send('no book exists');
+      }
       //json res format same as .get
+      try {
+        if (!comment) {
+          return res.status(200).send('missing required field comment');
+        }
+
+        const book = await BookModel.findByIdAndUpdate(
+          bookId,
+          { $push: { comments: comment} },
+          { new: true }
+        );
+
+        if (!book) {
+          return res.status(200).send('no book exists');
+        }
+
+        return res.status(200).json(book);
+
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'server error' });
+      }
     })
     
-    .delete(function(req, res){
-      let bookid = req.params.id;
+    .delete(async (req, res) => {
+      let bookId = req.params.id;
+
+      if (!mongoose.Types.ObjectId.isValid(bookId)) {
+        return res.status(200).send('no book exists');
+      }
       //if successful response will be 'delete successful'
+      try {
+        const book = await Book.findByIdAndDelete(bookId);
+        if (!book) {
+          return res.status(200).send('no book exists');
+        }
+        return res.status(200).send('delete successful');
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'server error'});
+      }
     });
-  
 };
